@@ -9,8 +9,7 @@ services:
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
     env_file:
       - .env
-    volumes:
-      # Optional: Mount airports.json for easy updates without rebuild
-      - ./airports.json:/app/airports.json:ro

@@ -1,62 +1,50 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
-interface AirportData {
-  [key: string]: string;
-}
-
-let airportData: AirportData | null = null;
-
 /**
- * Load airport data from JSON file
+ * Airport utilities using Supabase database
+ * 
+ * This module provides functions to search and retrieve airport data
+ * from a Supabase database instead of a static JSON file.
  */
-export function loadAirportData(): AirportData {
-  if (airportData) {
-    return airportData;
-  }
 
-  const filePath = path.join(__dirname, '..', 'airports.json');
-  const rawData = fs.readFileSync(filePath, 'utf-8');
-  const data: AirportData = JSON.parse(rawData);
-  airportData = data;
-  return data;
-}
+import { searchAirportsByCode, getAirportByExactCode, fetchAllAirports } from './supabase';
 
 /**
  * Search for airport by code (partial, case-insensitive matching)
  * @param query - Airport code to search for
  * @returns Array of matching airports with their codes and names
  */
-export function searchAirport(query: string): Array<{ code: string; name: string }> {
-  const airports = loadAirportData();
-  const normalizedQuery = query.trim().toUpperCase();
-
-  const results: Array<{ code: string; name: string }> = [];
-
-  for (const [code, name] of Object.entries(airports)) {
-    if (code.includes(normalizedQuery)) {
-      results.push({ code, name });
-    }
+export async function searchAirport(query: string): Promise<Array<{ code: string; name: string }>> {
+  try {
+    return await searchAirportsByCode(query);
+  } catch (error) {
+    console.error('Error searching airports:', error);
+    return [];
   }
-
-  return results;
 }
 
 /**
- * Get exact airport match
+ * Get exact airport match by code
  * @param code - Airport IATA code
  * @returns Airport name if found, null otherwise
  */
-export function getAirportByCode(code: string): string | null {
-  const airports = loadAirportData();
-  const normalizedCode = code.trim().toUpperCase();
-  return airports[normalizedCode] || null;
+export async function getAirportByCode(code: string): Promise<string | null> {
+  try {
+    const airport = await getAirportByExactCode(code);
+    return airport ? airport.name : null;
+  } catch (error) {
+    console.error('Error getting airport by code:', error);
+    return null;
+  }
 }
 
 /**
- * Get all airports
- * @returns Object with all airport codes and names
+ * Get all airports from database
+ * @returns Array of all airports
  */
-export function getAllAirports(): AirportData {
-  return loadAirportData();
+export async function getAllAirports() {
+  try {
+    return await fetchAllAirports();
+  } catch (error) {
+    console.error('Error fetching all airports:', error);
+    return [];
+  }
 }

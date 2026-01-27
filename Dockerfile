@@ -13,7 +13,6 @@ RUN npm ci --only=production
 # Copy source code
 COPY tsconfig.json ./
 COPY src ./src
-COPY airports.json ./
 
 # Install TypeScript and build dependencies
 RUN npm install -D typescript @types/node ts-node

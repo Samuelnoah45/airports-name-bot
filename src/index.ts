@@ -48,7 +48,7 @@ bot.command('help', (ctx) => {
 });
 
 // Handle text messages
-bot.on(message('text'), (ctx) => {
+bot.on(message('text'), async (ctx) => {
   const userQuery = ctx.message.text.trim();
 
   // Ignore if it's a command
@@ -56,32 +56,43 @@ bot.on(message('text'), (ctx) => {
     return;
   }
 
-  // Search for airports
-  const results = searchAirport(userQuery);
+  try {
+    // Search for airports in Supabase
+    const results = await searchAirport(userQuery);
 
-  if (results.length === 0) {
+    if (results.length === 0) {
+      ctx.reply(
+        `❌ No airport found for "${userQuery}"\n\n` +
+        'Please try another airport code.\n' +
+        'Use /help for more information.'
+      );
+      return;
+    }
+
+    // If exactly one match, show it
+    if (results.length === 1) {
+      const airport = results[0];
+      ctx.reply(`✈️ ${airport.code}: ${airport.name}`);
+      return;
+    }
+
+    // If multiple matches, show all (max 20 due to Telegram message limits)
+    const displayResults = results.slice(0, 20);
+    const responseLines = [
+      `✈️ Found ${results.length} airport${results.length > 1 ? 's' : ''}${results.length > 20 ? ' (showing first 20)' : ''}:\n`
+    ];
+    displayResults.forEach((airport) => {
+      responseLines.push(`• ${airport.code}: ${airport.name}`);
+    });
+
+    ctx.reply(responseLines.join('\n'));
+  } catch (error) {
+    console.error('Error processing query:', error);
     ctx.reply(
-      `❌ No airport found for "${userQuery}"\n\n` +
-      'Please try another airport code.\n' +
-      'Use /help for more information.'
+      '❌ Sorry, there was an error searching for airports.\n' +
+      'Please try again later.'
     );
-    return;
   }
-
-  // If exactly one match, show it
-  if (results.length === 1) {
-    const airport = results[0];
-    ctx.reply(`✈️ ${airport.code}: ${airport.name}`);
-    return;
-  }
-
-  // If multiple matches, show all
-  const responseLines = ['✈️ Found multiple airports:\n'];
-  results.forEach((airport) => {
-    responseLines.push(`• ${airport.code}: ${airport.name}`);
-  });
-
-  ctx.reply(responseLines.join('\n'));
 });
 
 // Error handling
