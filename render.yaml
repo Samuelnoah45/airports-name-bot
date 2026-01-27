@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: telegram-airport-bot
+    runtime: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
