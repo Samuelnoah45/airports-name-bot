@@ -12,7 +12,7 @@ import { searchAirportsByCode, getAirportByExactCode, fetchAllAirports } from '.
  * @param query - Airport code to search for
  * @returns Array of matching airports with their codes and names
  */
-export async function searchAirport(query: string): Promise<Array<{ code: string; name: string }>> {
+export async function searchAirport(query: string): Promise<Array<{ Name: string; City: string; Country: string; IATA: string; ICAO: string }>> {
   try {
     return await searchAirportsByCode(query);
   } catch (error) {
@@ -26,10 +26,10 @@ export async function searchAirport(query: string): Promise<Array<{ code: string
  * @param code - Airport IATA code
  * @returns Airport name if found, null otherwise
  */
-export async function getAirportByCode(code: string): Promise<string | null> {
+export async function getAirportByCode(code: string): Promise<{ Name: string; City: string; Country: string; IATA: string; ICAO: string } | null> {
   try {
     const airport = await getAirportByExactCode(code);
-    return airport ? airport.name : null;
+    return airport;
   } catch (error) {
     console.error('Error getting airport by code:', error);
     return null;

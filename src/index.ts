@@ -22,11 +22,11 @@ const bot = new Telegraf(BOT_TOKEN);
 bot.command('start', (ctx) => {
   ctx.reply(
     '✈️ Welcome to Airport Lookup Bot!\n\n' +
-    'Send me an airport code (IATA code) and I\'ll tell you the full airport name.\n\n' +
+    'Send me an airport IATA code and I\'ll show you the full airport information.\n\n' +
     'Examples:\n' +
-    '• JFK → John F. Kennedy International Airport\n' +
-    '• LAX → Los Angeles International Airport\n' +
-    '• LHR → London Heathrow Airport\n\n' +
+    '• JFK → Full airport details\n' +
+    '• LAX → Full airport details\n' +
+    '• LHR → Full airport details\n\n' +
     'Just type the airport code to get started!'
   );
 });
@@ -36,13 +36,18 @@ bot.command('help', (ctx) => {
   ctx.reply(
     '🆘 How to use Airport Lookup Bot:\n\n' +
     '1. Simply send me an airport IATA code (3-letter code)\n' +
-    '2. I\'ll respond with the full airport name\n' +
+    '2. I\'ll respond with full airport information:\n' +
+    '   • Airport Name\n' +
+    '   • City\n' +
+    '   • Country\n' +
+    '   • IATA Code\n' +
+    '   • ICAO Code\n' +
     '3. Searches are case-insensitive\n' +
     '4. Partial matches are supported\n\n' +
     'Examples:\n' +
-    '• Type "JFK" → John F. Kennedy International Airport\n' +
+    '• Type "JFK" → Full airport details\n' +
     '• Type "jfk" → Same result (case-insensitive)\n' +
-    '• Type "SFO" → San Francisco International Airport\n\n' +
+    '• Type "SFO" → Full airport details\n\n' +
     'Have fun exploring airports around the world! ✈️'
   );
 });
@@ -64,15 +69,24 @@ bot.on(message('text'), async (ctx) => {
       ctx.reply(
         `❌ No airport found for "${userQuery}"\n\n` +
         'Please try another airport code.\n' +
-        'Use /help for more information.'
+        'Use /help for more information.\n\n' +
+        'dev: sami sky'
       );
       return;
     }
 
-    // If exactly one match, show it
+    // If exactly one match, show full details
     if (results.length === 1) {
       const airport = results[0];
-      ctx.reply(`✈️ ${airport.code}: ${airport.name}`);
+      const response = 
+        `✈️ Airport Information\n\n` +
+        `📍 Name: ${airport.Name}\n` +
+        `🏙️ City: ${airport.City || 'N/A'}\n` +
+        `🌍 Country: ${airport.Country || 'N/A'}\n` +
+        `✈️ IATA: ${airport.IATA}\n` +
+        `🛫 ICAO: ${airport.ICAO || 'N/A'}\n\n` +
+        `dev: sami sky`;
+      ctx.reply(response);
       return;
     }
 
@@ -82,15 +96,22 @@ bot.on(message('text'), async (ctx) => {
       `✈️ Found ${results.length} airport${results.length > 1 ? 's' : ''}${results.length > 20 ? ' (showing first 20)' : ''}:\n`
     ];
     displayResults.forEach((airport) => {
-      responseLines.push(`• ${airport.code}: ${airport.name}`);
+      const cityCountry = airport.City && airport.Country 
+        ? `, ${airport.City}, ${airport.Country}` 
+        : airport.Country 
+        ? `, ${airport.Country}` 
+        : '';
+      responseLines.push(`• ${airport.IATA}: ${airport.Name}${cityCountry}`);
     });
+    responseLines.push(`\ndev: sami sky`);
 
     ctx.reply(responseLines.join('\n'));
   } catch (error) {
     console.error('Error processing query:', error);
     ctx.reply(
       '❌ Sorry, there was an error searching for airports.\n' +
-      'Please try again later.'
+      'Please try again later.\n\n' +
+      'dev: sami sky'
     );
   }
 });
@@ -98,7 +119,7 @@ bot.on(message('text'), async (ctx) => {
 // Error handling
 bot.catch((err, ctx) => {
   console.error(`Error for ${ctx.updateType}`, err);
-  ctx.reply('Sorry, an error occurred. Please try again.');
+  ctx.reply('Sorry, an error occurred. Please try again.\n\ndev: sami sky');
 });
 
 // Start the bot
