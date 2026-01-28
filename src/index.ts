@@ -125,7 +125,7 @@ bot.catch((err, ctx) => {
 
 // Create HTTP server for Render health checks
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.get('/', (req, res) => {
   res.json({ 
