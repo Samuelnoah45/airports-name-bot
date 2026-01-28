@@ -2,6 +2,7 @@ import { Telegraf, Context } from 'telegraf';
 import { message } from 'telegraf/filters';
 import * as dotenv from 'dotenv';
 import { searchAirport, getAirportByCode } from './airports';
+import express from 'express';
 
 // Load environment variables
 dotenv.config();
@@ -120,6 +121,27 @@ bot.on(message('text'), async (ctx) => {
 bot.catch((err, ctx) => {
   console.error(`Error for ${ctx.updateType}`, err);
   ctx.reply('Sorry, an error occurred. Please try again.\n\ndev: sami sky');
+});
+
+// Create HTTP server for Render health checks
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Telegram Airport Bot is running',
+    uptime: process.uptime()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+// Start HTTP server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🌐 HTTP server listening on port ${PORT}`);
 });
 
 // Start the bot
